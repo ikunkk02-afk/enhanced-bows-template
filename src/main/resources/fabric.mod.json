@@ -1,0 +1,48 @@
+{
+	"schemaVersion": 1,
+	"id": "enhanced-bows",
+	"version": "${version}",
+	"name": "Enhanced Bows",
+	"description": "Server-authoritative spectral-arrow scanning with line-of-sight, bouncing projectiles, and configurable HUD animations.",
+	"authors": [
+		"ikunkk02-afk"
+	],
+	"contact": {
+		"homepage": "https://github.com/ikunkk02-afk/enhanced-bows-template",
+		"sources": "https://github.com/ikunkk02-afk/enhanced-bows-template"
+	},
+	"license": "MIT",
+	"icon": "assets/enhanced-bows/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"io.github.ikunkk02.enhancedbows.EnhancedBows"
+		],
+		"client": [
+			"io.github.ikunkk02.enhancedbows.client.EnhancedBowsClient"
+		],
+		"modmenu": [
+			"io.github.ikunkk02.enhancedbows.client.config.EnhancedBowsModMenu"
+		],
+		"fabric-datagen": [
+			"io.github.ikunkk02.enhancedbows.client.EnhancedBowsDataGenerator"
+		]
+	},
+	"mixins": [
+		"enhanced-bows.mixins.json",
+		{
+			"config": "enhanced-bows.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"cloth-config": ">=15.0.140",
+		"modmenu": ">=11.0.4"
+	}
+}

@@ -1,0 +1,21 @@
+{
+  "scanning_start": {
+    "sounds": [
+      "enhanced-bows:scanning_start",
+      "enhanced-bows:scanning_start_01",
+      "enhanced-bows:scanning_start_02",
+      "enhanced-bows:scanning_start_03",
+      "enhanced-bows:scanning_start_04"
+    ]
+  },
+  "scanning_loop": {
+    "sounds": [
+      "enhanced-bows:scanning_loop"
+    ]
+  },
+  "detected": {
+    "sounds": [
+      "enhanced-bows:detected"
+    ]
+  }
+}
