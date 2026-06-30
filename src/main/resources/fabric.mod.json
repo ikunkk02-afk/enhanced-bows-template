@@ -3,7 +3,7 @@
 	"id": "enhanced-bows",
 	"version": "${version}",
 	"name": "Enhanced Bows",
-	"description": "Server-authoritative spectral-arrow scanning with line-of-sight, bouncing projectiles, and configurable HUD animations.",
+	"description": "Server-authoritative spectral-arrow scanning with line-of-sight, bouncing projectiles, a text HUD, and custom sound imports.",
 	"authors": [
 		"ikunkk02-afk"
 	],
@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
 			"io.github.ikunkk02.enhancedbows.EnhancedBows"
+		],
+		"cardinal-components": [
+			"io.github.ikunkk02.enhancedbows.lightning.LightningComponents"
 		],
 		"client": [
 			"io.github.ikunkk02.enhancedbows.client.EnhancedBowsClient"
@@ -39,10 +42,17 @@
 		"fabricloader": ">=0.19.3",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"cardinal-components-base": ">=6.1.3",
+		"cardinal-components-entity": ">=6.1.3"
 	},
 	"suggests": {
 		"cloth-config": ">=15.0.140",
 		"modmenu": ">=11.0.4"
+	},
+	"custom": {
+		"cardinal-components": [
+			"enhanced-bows:lightning_charge"
+		]
 	}
 }

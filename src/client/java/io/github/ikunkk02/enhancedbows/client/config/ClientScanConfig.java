@@ -15,7 +15,6 @@ import java.nio.file.Path;
 /** Persists visual and audio preferences that are meaningful only on a client. */
 public final class ClientScanConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("enhanced-bows-client.json");
 	private static volatile Values current = Values.defaults();
 
 	private ClientScanConfig() {
@@ -23,15 +22,16 @@ public final class ClientScanConfig {
 
 	/** Loads client preferences without allowing malformed files to break startup. */
 	public static void load() {
+		Path path = path();
 		Values loaded = Values.defaults();
-		if (Files.exists(PATH)) {
-			try (Reader reader = Files.newBufferedReader(PATH)) {
+		if (Files.exists(path)) {
+			try (Reader reader = Files.newBufferedReader(path)) {
 				JsonObject json = GSON.fromJson(reader, JsonObject.class);
 				if (json != null) {
 					loaded = fromJson(json);
 				}
 			} catch (Exception exception) {
-				EnhancedBows.LOGGER.warn("Could not read {}; using defaults", PATH, exception);
+				EnhancedBows.LOGGER.warn("Could not read {}; using defaults", path, exception);
 			}
 		}
 		current = loaded;
@@ -49,29 +49,40 @@ public final class ClientScanConfig {
 	}
 
 	private static void save() {
+		Path path = path();
 		try {
-			Files.createDirectories(PATH.getParent());
-			try (Writer writer = Files.newBufferedWriter(PATH)) {
+			Files.createDirectories(path.getParent());
+			try (Writer writer = Files.newBufferedWriter(path)) {
 				GSON.toJson(current, writer);
 			}
 		} catch (IOException exception) {
-			EnhancedBows.LOGGER.warn("Could not write {}", PATH, exception);
+			EnhancedBows.LOGGER.warn("Could not write {}", path, exception);
 		}
 	}
 
-	/** Preserves existing client choices while defaulting newly added detected placement fields. */
-	private static Values fromJson(JsonObject json) {
+	private static Path path() {
+		return FabricLoader.getInstance().getConfigDir().resolve("enhanced-bows-client.json");
+	}
+
+	/** Reads only the current text-HUD and sound fields so legacy animation settings disappear on save. */
+	static Values fromJson(JsonObject json) {
 		Values defaults = Values.defaults();
 		return new Values(
-			getBoolean(json, "enableScanHudAnimation", defaults.enableScanHudAnimation()),
-			getBoolean(json, "enableDetectedHudAnimation", defaults.enableDetectedHudAnimation()),
-			getInt(json, "scanHudX", defaults.scanHudX()),
-			getInt(json, "scanHudY", defaults.scanHudY()),
-			getDouble(json, "scanHudScale", defaults.scanHudScale()),
-			getInt(json, "detectedHudX", defaults.detectedHudX()),
-			getInt(json, "detectedHudY", defaults.detectedHudY()),
-			getDouble(json, "detectedHudScale", defaults.detectedHudScale()),
-			getBoolean(json, "enableScanSounds", defaults.enableScanSounds())
+			getBoolean(json, "enableScanSounds", defaults.enableScanSounds()),
+			getBoolean(json, "useCustomScanStartSound", defaults.useCustomScanStartSound()),
+			getBoolean(json, "useCustomDetectedSound", defaults.useCustomDetectedSound()),
+			getBoolean(json, "useCustomBounceSound", defaults.useCustomBounceSound()),
+			getBoolean(json, "enableScanTextHud", defaults.enableScanTextHud()),
+			getInt(json, "scanTextHudY", defaults.scanTextHudY()),
+			getBoolean(json, "enableScanningArrowRedTrail", defaults.enableScanningArrowRedTrail()),
+			getInt(json, "redTrailLength", defaults.redTrailLength()),
+			getInt(json, "redTrailParticleCount", defaults.redTrailParticleCount()),
+			getDouble(json, "redTrailParticleSize", defaults.redTrailParticleSize()),
+			getBoolean(json, "enableLightningHud", defaults.enableLightningHud()),
+			getInt(json, "lightningHudX", defaults.lightningHudX()),
+			getInt(json, "lightningHudY", defaults.lightningHudY()),
+			getDouble(json, "lightningHudScale", defaults.lightningHudScale()),
+			getBoolean(json, "showLightningHudOnlyWhenHoldingBow", defaults.showLightningHudOnlyWhenHoldingBow())
 		).sanitized();
 	}
 
@@ -99,32 +110,44 @@ public final class ClientScanConfig {
 		}
 	}
 
-	/** Immutable client settings shared by the renderer, editor, and config screen. */
+	/** Immutable client settings shared by the text renderer, sound player, importer, and config screen. */
 	public record Values(
-		boolean enableScanHudAnimation,
-		boolean enableDetectedHudAnimation,
-		int scanHudX,
-		int scanHudY,
-		double scanHudScale,
-		int detectedHudX,
-		int detectedHudY,
-		double detectedHudScale,
-		boolean enableScanSounds
+		boolean enableScanSounds,
+		boolean useCustomScanStartSound,
+		boolean useCustomDetectedSound,
+		boolean useCustomBounceSound,
+		boolean enableScanTextHud,
+		int scanTextHudY,
+		boolean enableScanningArrowRedTrail,
+		int redTrailLength,
+		int redTrailParticleCount,
+		double redTrailParticleSize,
+		boolean enableLightningHud,
+		int lightningHudX,
+		int lightningHudY,
+		double lightningHudScale,
+		boolean showLightningHudOnlyWhenHoldingBow
 	) {
 		public static Values defaults() {
-			return new Values(true, true, -1, 40, 1.0, -1, 40, 1.0, true);
+			return new Values(true, false, false, false, true, 40,
+				true, 12, 14, 1.0, true, 8, 8, 0.8, true);
 		}
 
 		public Values sanitized() {
-			double scanningScale = Double.isFinite(scanHudScale)
-				? Math.max(0.25, Math.min(scanHudScale, 3.0))
+			int trailLength = Math.max(1, Math.min(redTrailLength, 64));
+			int particleCount = Math.max(1, Math.min(redTrailParticleCount, 64));
+			double particleSize = Double.isFinite(redTrailParticleSize)
+				? Math.max(0.1, Math.min(redTrailParticleSize, 4.0))
 				: 1.0;
-			double detectedScale = Double.isFinite(detectedHudScale)
-				? Math.max(0.3, Math.min(detectedHudScale, 3.0))
-				: 1.0;
-			return new Values(enableScanHudAnimation, enableDetectedHudAnimation,
-				scanHudX, scanHudY, Math.max(0.3, scanningScale),
-				detectedHudX, detectedHudY, detectedScale, enableScanSounds);
+			double hudScale = Double.isFinite(lightningHudScale)
+				? Math.max(0.25, Math.min(lightningHudScale, 2.0))
+				: 0.8;
+			return new Values(enableScanSounds, useCustomScanStartSound, useCustomDetectedSound,
+				useCustomBounceSound, enableScanTextHud, Math.max(0, Math.min(scanTextHudY, 10000)),
+				enableScanningArrowRedTrail, trailLength, particleCount, particleSize,
+				enableLightningHud, Math.max(0, Math.min(lightningHudX, 10000)),
+				Math.max(0, Math.min(lightningHudY, 10000)), hudScale,
+				showLightningHudOnlyWhenHoldingBow);
 		}
 	}
 }

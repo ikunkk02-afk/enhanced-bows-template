@@ -7,6 +7,6 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 public final class EnhancedBowsModMenu implements ModMenuApi {
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory() {
-		return ScanConfigScreenFactory::create;
+		return EnhancedBowsConfigHubScreen::new;
 	}
 }

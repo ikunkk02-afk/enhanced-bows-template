@@ -11,10 +11,12 @@ public final class BouncePhysics {
 	/** Returns whether the collision should replace vanilla block embedding. */
 	public static boolean canBounce(boolean enabled, boolean scanningArrow, int bounceCount, int maxBounces,
 			double speed, double damping, double minimumResultingSpeed) {
+		double resultingSpeed = speed * damping;
 		return enabled
 			&& scanningArrow
 			&& bounceCount < maxBounces
-			&& speed * damping >= minimumResultingSpeed;
+			&& resultingSpeed > 1.0E-7
+			&& resultingSpeed >= minimumResultingSpeed;
 	}
 
 	/** Reflects the velocity across the hit face and applies energy loss. */
@@ -24,4 +26,5 @@ public final class BouncePhysics {
 		double z = hitSide.getAxis() == Direction.Axis.Z ? -velocity.z : velocity.z;
 		return new Vec3d(x, y, z).multiply(damping);
 	}
+
 }

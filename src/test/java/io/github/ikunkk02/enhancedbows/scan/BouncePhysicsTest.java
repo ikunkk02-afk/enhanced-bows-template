@@ -10,12 +10,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BouncePhysicsTest {
 	@Test
-	void onlyActiveScanningArrowsBelowTheLimitWithEnoughResultingSpeedBounce() {
+	void onlyActiveMovingScanningArrowsBelowTheLimitBounce() {
 		assertTrue(BouncePhysics.canBounce(true, true, 0, 3, 1.0, 0.75, 0.15));
 		assertFalse(BouncePhysics.canBounce(false, true, 0, 3, 1.0, 0.75, 0.15));
 		assertFalse(BouncePhysics.canBounce(true, false, 0, 3, 1.0, 0.75, 0.15));
 		assertFalse(BouncePhysics.canBounce(true, true, 3, 3, 1.0, 0.75, 0.15));
+		assertTrue(BouncePhysics.canBounce(true, true, 0, 3, 0.21, 0.75, 0.15));
 		assertFalse(BouncePhysics.canBounce(true, true, 0, 3, 0.19, 0.75, 0.15));
+		assertFalse(BouncePhysics.canBounce(true, true, 0, 3, 0.0, 0.75, 0.15));
+	}
+
+	@Test
+	void lowSpeedReflectionDoesNotGainArtificialEnergy() {
+		Vec3d reflected = BouncePhysics.reflect(new Vec3d(0.1, 0.0, 0.0), Direction.EAST, 0.5);
+
+		assertEquals(-0.05, reflected.x, 0.00001);
+		assertEquals(0.0, reflected.y, 0.00001);
+		assertEquals(0.0, reflected.z, 0.00001);
 	}
 
 	@Test

@@ -4,6 +4,8 @@ package io.github.ikunkk02.enhancedbows.scan;
 public interface ScanningArrowAccess {
 	boolean enhancedBows$isScanningArrow();
 
+	void enhancedBows$setScanningArrow(boolean scanning);
+
 	int enhancedBows$getBounceCount();
 
 	int enhancedBows$getMaxBounces();

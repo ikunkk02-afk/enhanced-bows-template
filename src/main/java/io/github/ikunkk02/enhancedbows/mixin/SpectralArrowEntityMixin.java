@@ -3,6 +3,7 @@ package io.github.ikunkk02.enhancedbows.mixin;
 import io.github.ikunkk02.enhancedbows.config.ServerScanConfig;
 import io.github.ikunkk02.enhancedbows.scan.ScanRules;
 import io.github.ikunkk02.enhancedbows.scan.ScanningArrowAccess;
+import io.github.ikunkk02.enhancedbows.scan.TrackedScanningArrowAccess;
 import io.github.ikunkk02.enhancedbows.scan.SpectralScanController;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -40,13 +41,11 @@ public abstract class SpectralArrowEntityMixin extends PersistentProjectileEntit
 	@Unique
 	private int enhancedBows$elapsedTicks;
 	@Unique
-	private boolean enhancedBows$isScanningArrow;
-	@Unique
 	private int enhancedBows$bounceCount;
 	@Unique
 	private int enhancedBows$maxBounces = 3;
 	@Unique
-	private final Set<UUID> enhancedBows$notifiedPlayers = new HashSet<>();
+	private final Set<UUID> enhancedBows$notifiedTargets = new HashSet<>();
 
 	/** Runs the authoritative scan before vanilla movement mutates the initial velocity. */
 	@Inject(method = "tick", at = @At("HEAD"))
@@ -61,29 +60,25 @@ public abstract class SpectralArrowEntityMixin extends PersistentProjectileEntit
 		if (!enhancedBows$triggerChecked) {
 			enhancedBows$triggerChecked = true;
 			boolean playerOwned = rawOwner instanceof ServerPlayerEntity;
-			enhancedBows$scanActive = ScanRules.shouldTrigger(config.enableSpectralArrowScan(), playerOwned,
-				arrow.getVelocity().y, config.upwardVelocityThreshold());
+			enhancedBows$scanActive = ScanRules.shouldTrigger(config.enableSpectralArrowScan(), playerOwned);
 			if (enhancedBows$scanActive) {
-				enhancedBows$isScanningArrow = true;
+				enhancedBows$setScanningArrow(true);
 				enhancedBows$maxBounces = config.scanningArrowMaxBounces();
-				SpectralScanController.notifyStarted((ServerPlayerEntity) rawOwner, config.scanDurationTicks());
+				SpectralScanController.notifyStarted((ServerPlayerEntity) rawOwner);
 			}
 		}
 
 		if (!enhancedBows$scanActive || inGround || !(rawOwner instanceof ServerPlayerEntity owner)) {
 			enhancedBows$scanActive = false;
+			enhancedBows$setScanningArrow(false);
 			return;
 		}
 
-		if (ScanRules.shouldScanAt(enhancedBows$elapsedTicks, config.scanDurationTicks(),
-			config.scanIntervalTicks())) {
-			SpectralScanController.scan(arrow, owner, config, enhancedBows$notifiedPlayers);
+		if (ScanRules.shouldScanAt(enhancedBows$elapsedTicks, config.scanIntervalTicks())) {
+			SpectralScanController.scan(arrow, owner, config, enhancedBows$notifiedTargets);
 		}
 
 		enhancedBows$elapsedTicks++;
-		if (enhancedBows$elapsedTicks >= config.scanDurationTicks()) {
-			enhancedBows$scanActive = false;
-		}
 	}
 
 	/** Persists the one-shot gate and notification set across chunk saves. */
@@ -92,11 +87,11 @@ public abstract class SpectralArrowEntityMixin extends PersistentProjectileEntit
 		nbt.putBoolean("EnhancedBowsScanChecked", enhancedBows$triggerChecked);
 		nbt.putBoolean("EnhancedBowsScanActive", enhancedBows$scanActive);
 		nbt.putInt("EnhancedBowsScanElapsed", enhancedBows$elapsedTicks);
-		nbt.putBoolean("enhancedbows:is_scanning_arrow", enhancedBows$isScanningArrow);
+		nbt.putBoolean("enhancedbows:is_scanning_arrow", enhancedBows$isScanningArrow());
 		nbt.putInt("enhancedbows:bounce_count", enhancedBows$bounceCount);
 		nbt.putInt("enhancedbows:max_bounces", enhancedBows$maxBounces);
 		NbtList notified = new NbtList();
-		for (UUID uuid : enhancedBows$notifiedPlayers) {
+		for (UUID uuid : enhancedBows$notifiedTargets) {
 			notified.add(NbtHelper.fromUuid(uuid));
 		}
 		nbt.put("EnhancedBowsScanNotified", notified);
@@ -108,18 +103,18 @@ public abstract class SpectralArrowEntityMixin extends PersistentProjectileEntit
 		enhancedBows$triggerChecked = nbt.getBoolean("EnhancedBowsScanChecked");
 		enhancedBows$scanActive = nbt.getBoolean("EnhancedBowsScanActive");
 		enhancedBows$elapsedTicks = nbt.getInt("EnhancedBowsScanElapsed");
-		enhancedBows$isScanningArrow = nbt.contains("enhancedbows:is_scanning_arrow")
+		enhancedBows$setScanningArrow(nbt.contains("enhancedbows:is_scanning_arrow")
 			? nbt.getBoolean("enhancedbows:is_scanning_arrow")
-			: enhancedBows$scanActive;
+			: enhancedBows$scanActive);
 		enhancedBows$bounceCount = Math.max(0, nbt.getInt("enhancedbows:bounce_count"));
 		enhancedBows$maxBounces = nbt.contains("enhancedbows:max_bounces")
 			? Math.max(0, nbt.getInt("enhancedbows:max_bounces"))
 			: 3;
-		enhancedBows$notifiedPlayers.clear();
+		enhancedBows$notifiedTargets.clear();
 		NbtList notified = nbt.getList("EnhancedBowsScanNotified", 11);
 		for (int index = 0; index < notified.size(); index++) {
 			try {
-				enhancedBows$notifiedPlayers.add(NbtHelper.toUuid(notified.get(index)));
+				enhancedBows$notifiedTargets.add(NbtHelper.toUuid(notified.get(index)));
 			} catch (IllegalArgumentException ignored) {
 				// Ignore malformed third-party NBT rather than breaking entity loading.
 			}
@@ -128,7 +123,12 @@ public abstract class SpectralArrowEntityMixin extends PersistentProjectileEntit
 
 	@Override
 	public boolean enhancedBows$isScanningArrow() {
-		return enhancedBows$isScanningArrow;
+		return ((TrackedScanningArrowAccess) (Object) this).enhancedBows$getTrackedScanning();
+	}
+
+	@Override
+	public void enhancedBows$setScanningArrow(boolean scanning) {
+		((TrackedScanningArrowAccess) (Object) this).enhancedBows$setTrackedScanning(scanning);
 	}
 
 	@Override

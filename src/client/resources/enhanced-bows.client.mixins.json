@@ -3,7 +3,7 @@
   "package": "io.github.ikunkk02.enhancedbows.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "ScreenAccessor"
+    "SpectralArrowTrailMixin"
   ],
   "injectors": {
     "defaultRequire": 1

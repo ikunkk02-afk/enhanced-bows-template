@@ -1,8 +1,9 @@
 package io.github.ikunkk02.enhancedbows;
 
 import io.github.ikunkk02.enhancedbows.config.ServerScanConfig;
+import io.github.ikunkk02.enhancedbows.enchantment.ModEnchantments;
+import io.github.ikunkk02.enhancedbows.lightning.LightningEvents;
 import io.github.ikunkk02.enhancedbows.network.ModNetworking;
-import io.github.ikunkk02.enhancedbows.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.util.Identifier;
@@ -22,7 +23,8 @@ public class EnhancedBows implements ModInitializer {
 	public void onInitialize() {
 		ServerScanConfig.load();
 		ModNetworking.register();
-		ModSounds.register();
+		ModEnchantments.registerCreativeBook();
+		LightningEvents.register();
 		LOGGER.info("Enhanced Bows spectral-arrow scanning initialized");
 	}
 
