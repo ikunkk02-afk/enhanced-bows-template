@@ -17,4 +17,9 @@ public final class LightningArrowRules {
 	public static boolean shouldConsumeCharge(boolean creative, boolean allowCreativeInfinite) {
 		return !creative || !allowCreativeInfinite;
 	}
+
+	public static boolean shouldTriggerImpact(boolean armed, boolean triggered, boolean playerOwner,
+			boolean hasChargeOrInfinite, boolean entityImpact, boolean blockImpact) {
+		return armed && !triggered && playerOwner && hasChargeOrInfinite && (entityImpact || blockImpact);
+	}
 }

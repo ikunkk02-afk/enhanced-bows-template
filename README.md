@@ -1,25 +1,129 @@
 # Enhanced Bows
 
-A Fabric 1.21.1 mod that adds a server-authoritative spectral-arrow scanning mode.
+Enhanced Bows 是一个 Fabric 1.21.1 的 Minecraft 弓箭增强模组，围绕原版弓和箭矢扩展群攻、探测、雷暴、爆裂和箭雨玩法，让弓不再只是单体远程武器。
 
-## Spectral Arrow Scan
+## 功能介绍
 
-- Fire a spectral arrow clearly upward to start a five-second scan.
-- Visible living entities inside the configured radius receive Glowing.
-- Solid blocks obstruct scans, so walls and buildings divide scan spaces.
-- Activated scanning arrows can bounce from blocks up to three times by default.
-- Scanning and detected HUD animations have independent draggable positions and scales.
+### 光灵箭探测
 
-Open the HUD editor with Right Alt or with the button in the Mod Menu configuration screen.
+- 使用光灵箭即可触发探测
+- 探测箭拥有红色拖尾
+- 可以反弹，默认最多 3 次
+- 会扫描附近实体并给予发光效果
+- 支持建筑遮挡检测，隔墙不会被探测
+- 支持探测玩家开关
 
-## Build
+### 闪电附魔
 
-```powershell
-.\gradlew.bat clean test build
-```
+- 弓专属、最高等级 1
+- 命中方块或生物后创建雷暴区域
+- 雷暴默认持续 5 秒
+- 扫描附近 8 格生物并召唤雷击
+- 命中生物时可触发连锁雷击
+- 默认拥有 2 次释放机会
+- 默认每 20 秒恢复 1 次
+- 左上角 HUD 显示当前次数和恢复时间
+- 可以和箭雨共存
+- 不能和爆裂共存
 
-The built mod JAR is written to `build/libs/`.
+### 爆裂附魔
 
-## License
+- 弓专属、最高等级 1
+- 普通箭或药箭命中方块、生物时爆炸
+- 默认不破坏方块，也不会生成火焰
+- 可在配置中允许破坏方块
+- 光灵箭不会触发爆裂，因为光灵箭用于探测
+- 不能和闪电共存
+- 不能和箭雨共存
 
-MIT
+### 箭雨附魔
+
+- 弓专属、最高等级 1
+- 默认按 V 切换正常模式与箭雨模式
+- 玩家可在 Minecraft 按键设置中修改按键
+- 箭命中方块或生物后，在目标区域召唤箭雨
+- 默认半径 8 格
+- 默认分为 4 波，共生成 24 支箭
+- 默认冷却 10 秒
+- HUD 显示箭雨模式和冷却时间
+- 可以和闪电共存
+- 不能和爆裂共存
+
+### 自定义音效
+
+- 默认使用原版音效
+- 支持导入自定义 `.ogg` 音效
+- 支持通过 FFmpeg 自动把 `.mp3` 或 `.wav` 转换为 `.ogg`
+- 如果没有 FFmpeg，界面会提示安装，或将 `ffmpeg.exe` 放入指定配置目录
+
+## 前置要求
+
+- Minecraft 1.21.1
+- Fabric Loader 0.19.3 或更高版本
+- Fabric API
+- Cardinal Components API 6.1.3 或更高版本
+- Cloth Config API 15.0.140 或更高版本
+- Mod Menu 11.0.4 或更高版本
+
+服务端和客户端都需要安装本模组及上述依赖。
+
+## 安装方法
+
+1. 安装适用于 Minecraft 1.21.1 的 Fabric Loader。
+2. 安装 Fabric API。
+3. 安装 Cardinal Components API。
+4. 安装 Cloth Config API。
+5. 安装 Mod Menu。
+6. 将本模组 JAR 文件放入游戏或服务器的 `mods` 文件夹。
+7. 启动游戏或服务器。
+
+## 配置说明
+
+可以在 Mod Menu 中打开 Enhanced Bows 配置入口。配置内容包括：
+
+- 探测范围与是否影响玩家
+- 光灵箭反弹次数、速度衰减和遮挡检测
+- 闪电雷暴半径、持续时间、目标和恢复时间
+- 爆裂爆炸强度、伤害、击退、方块破坏和生成火焰
+- 箭雨范围、箭数、波数、冷却和触发方式
+- 探测、闪电和箭雨 HUD 显示开关
+- 自定义音效导入
+
+多人游戏中，玩法配置以服务器为准；客户端配置主要控制 HUD、拖尾和音效表现。
+
+## 按键
+
+默认按键：
+
+- V：切换箭雨模式
+
+玩家可以在 Minecraft 的控制设置中自行修改。
+
+## 兼容性说明
+
+- 本模组仅支持 Fabric 1.21.1
+- 不支持 Forge 或 NeoForge
+- 不支持弩，当前只增强原版弓
+- 服务端和客户端都需要安装
+- 支持单人游戏和 dedicated server
+- 三个附魔都可通过附魔台、附魔书、铁砧、随机战利品和村民交易获得
+
+## 注意事项
+
+- 爆裂默认不破坏方块，避免损坏存档
+- 如果开启爆裂破坏方块或生成火焰，请谨慎使用并提前备份世界
+- 光灵箭主要用于探测，默认不会触发爆裂和箭雨
+- 闪电和箭雨可以共存
+- 爆裂不能和闪电、箭雨共存
+- 服务器管理员可以通过配置调整各功能的范围、伤害和冷却
+
+## 许可证
+
+本项目使用 [MIT License](LICENSE)。
+
+## Credits
+
+- 作者：shouyun
+- 抖音：[shouyun](https://v.douyin.com/75aDMY8LVM8/)
+- Bilibili：[shouyun](https://space.bilibili.com/1832031043)
+- Minecraft Modding with Fabric

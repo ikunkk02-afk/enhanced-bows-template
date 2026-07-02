@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LightningEnchantmentResourcesTest {
-	private static final Path RESOURCES = Path.of("src/main/resources");
+	private static final Path RESOURCES = Path.of("src/main/generated");
 
 	@Test
 	void lightningIsLevelOneAndSupportsOnlyBows() throws IOException {

@@ -27,6 +27,17 @@ class LightningArrowRulesTest {
 	}
 
 	@Test
+	void triggersOnEntityOrBlockImpactButNotOnMiss() {
+		assertTrue(LightningArrowRules.shouldTriggerImpact(true, false, true, true, true, false));
+		assertTrue(LightningArrowRules.shouldTriggerImpact(true, false, true, true, false, true));
+		assertFalse(LightningArrowRules.shouldTriggerImpact(true, false, true, true, false, false));
+		assertFalse(LightningArrowRules.shouldTriggerImpact(false, false, true, true, true, false));
+		assertFalse(LightningArrowRules.shouldTriggerImpact(true, true, true, true, true, false));
+		assertFalse(LightningArrowRules.shouldTriggerImpact(true, false, false, true, true, false));
+		assertFalse(LightningArrowRules.shouldTriggerImpact(true, false, true, false, true, false));
+	}
+
+	@Test
 	void creativeInfiniteModeSkipsChargeConsumption() {
 		assertFalse(LightningArrowRules.shouldConsumeCharge(true, true));
 		assertTrue(LightningArrowRules.shouldConsumeCharge(true, false));

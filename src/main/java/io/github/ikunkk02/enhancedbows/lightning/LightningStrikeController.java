@@ -4,22 +4,30 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Vec3d;
 
-/** Creates the vanilla bolt visual while applying lightning damage only to the valid target. */
+/** Creates cosmetic vanilla bolts while applying explicit damage only to selected targets. */
 public final class LightningStrikeController {
 	private LightningStrikeController() {
 	}
 
-	public static void strike(ServerWorld world, LivingEntity target, String damageMode) {
+	public static void visual(ServerWorld world, Vec3d position) {
 		LightningEntity lightning = EntityType.LIGHTNING_BOLT.create(world);
 		if (lightning == null) {
 			return;
 		}
-		lightning.refreshPositionAfterTeleport(target.getX(), target.getY(), target.getZ());
+		lightning.refreshPositionAfterTeleport(position.x, position.y, position.z);
 		lightning.setCosmetic(true);
 		world.spawnEntity(lightning);
-		if ("vanilla_lightning".equals(damageMode) && target.isAlive()) {
-			target.damage(world.getDamageSources().lightningBolt(), 5.0F);
+	}
+
+	public static void strike(ServerWorld world, LivingEntity target, float bonusDamage, int fireSeconds) {
+		visual(world, target.getPos());
+		if (target.isAlive() && bonusDamage > 0.0F) {
+			target.damage(world.getDamageSources().lightningBolt(), bonusDamage);
+		}
+		if (target.isAlive() && fireSeconds > 0) {
+			target.setOnFireFor(fireSeconds);
 		}
 	}
 }

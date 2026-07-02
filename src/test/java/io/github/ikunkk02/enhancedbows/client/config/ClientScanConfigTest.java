@@ -27,6 +27,7 @@ class ClientScanConfigTest {
 		assertEquals(8, values.lightningHudY());
 		assertEquals(0.8, values.lightningHudScale());
 		assertTrue(values.showLightningHudOnlyWhenHoldingBow());
+		assertTrue(values.enableArrowRainHud());
 	}
 
 	@Test

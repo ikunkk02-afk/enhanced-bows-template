@@ -1,8 +1,10 @@
 package io.github.ikunkk02.enhancedbows;
 
+import io.github.ikunkk02.enhancedbows.arrowrain.ArrowRainManager;
 import io.github.ikunkk02.enhancedbows.config.ServerScanConfig;
 import io.github.ikunkk02.enhancedbows.enchantment.ModEnchantments;
 import io.github.ikunkk02.enhancedbows.lightning.LightningEvents;
+import io.github.ikunkk02.enhancedbows.lightning.LightningStormManager;
 import io.github.ikunkk02.enhancedbows.network.ModNetworking;
 import net.fabricmc.api.ModInitializer;
 
@@ -25,6 +27,8 @@ public class EnhancedBows implements ModInitializer {
 		ModNetworking.register();
 		ModEnchantments.registerCreativeBook();
 		LightningEvents.register();
+		LightningStormManager.register();
+		ArrowRainManager.register();
 		LOGGER.info("Enhanced Bows spectral-arrow scanning initialized");
 	}
 

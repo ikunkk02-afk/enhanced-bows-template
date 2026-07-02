@@ -1,0 +1,23 @@
+{
+  "anvil_cost": 4,
+  "description": {
+    "translate": "enchantment.enhanced_bows.arrow_rain"
+  },
+  "exclusive_set": "#enhanced-bows:exclusive_set/arrow_rain_burst",
+  "max_cost": {
+    "base": 46,
+    "per_level_above_first": 0
+  },
+  "max_level": 1,
+  "min_cost": {
+    "base": 16,
+    "per_level_above_first": 0
+  },
+  "primary_items": "#minecraft:enchantable/bow",
+  "slots": [
+    "mainhand",
+    "offhand"
+  ],
+  "supported_items": "#minecraft:enchantable/bow",
+  "weight": 5
+}

@@ -82,7 +82,8 @@ public final class ClientScanConfig {
 			getInt(json, "lightningHudX", defaults.lightningHudX()),
 			getInt(json, "lightningHudY", defaults.lightningHudY()),
 			getDouble(json, "lightningHudScale", defaults.lightningHudScale()),
-			getBoolean(json, "showLightningHudOnlyWhenHoldingBow", defaults.showLightningHudOnlyWhenHoldingBow())
+			getBoolean(json, "showLightningHudOnlyWhenHoldingBow", defaults.showLightningHudOnlyWhenHoldingBow()),
+			getBoolean(json, "enableArrowRainHud", defaults.enableArrowRainHud())
 		).sanitized();
 	}
 
@@ -126,11 +127,25 @@ public final class ClientScanConfig {
 		int lightningHudX,
 		int lightningHudY,
 		double lightningHudScale,
-		boolean showLightningHudOnlyWhenHoldingBow
+		boolean showLightningHudOnlyWhenHoldingBow,
+		boolean enableArrowRainHud
 	) {
+		public Values(boolean enableScanSounds, boolean useCustomScanStartSound,
+				boolean useCustomDetectedSound, boolean useCustomBounceSound,
+				boolean enableScanTextHud, int scanTextHudY, boolean enableScanningArrowRedTrail,
+				int redTrailLength, int redTrailParticleCount, double redTrailParticleSize,
+				boolean enableLightningHud, int lightningHudX, int lightningHudY,
+				double lightningHudScale, boolean showLightningHudOnlyWhenHoldingBow) {
+			this(enableScanSounds, useCustomScanStartSound, useCustomDetectedSound,
+				useCustomBounceSound, enableScanTextHud, scanTextHudY, enableScanningArrowRedTrail,
+				redTrailLength, redTrailParticleCount, redTrailParticleSize, enableLightningHud,
+				lightningHudX, lightningHudY, lightningHudScale,
+				showLightningHudOnlyWhenHoldingBow, true);
+		}
+
 		public static Values defaults() {
 			return new Values(true, false, false, false, true, 40,
-				true, 12, 14, 1.0, true, 8, 8, 0.8, true);
+				true, 12, 14, 1.0, true, 8, 8, 0.8, true, true);
 		}
 
 		public Values sanitized() {
@@ -147,7 +162,7 @@ public final class ClientScanConfig {
 				enableScanningArrowRedTrail, trailLength, particleCount, particleSize,
 				enableLightningHud, Math.max(0, Math.min(lightningHudX, 10000)),
 				Math.max(0, Math.min(lightningHudY, 10000)), hudScale,
-				showLightningHudOnlyWhenHoldingBow);
+				showLightningHudOnlyWhenHoldingBow, enableArrowRainHud);
 		}
 	}
 }
