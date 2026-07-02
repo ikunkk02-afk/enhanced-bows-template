@@ -2,7 +2,7 @@
 
 ## Scope
 
-Add a level-one, bow-only `enhanced-bows:arrow_rain` enchantment and a server-authoritative per-player mode toggled through a configurable client key binding. A qualifying arrow impact schedules a bounded four-wave rain of ordinary arrows. Preserve the existing spectral-arrow scan, Lightning storm/charges/HUD, Burst explosion, bounce, trail, and configuration navigation.
+Add a level-one, bow-only `enhanced-bows:arrow_rain` enchantment and a server-authoritative per-player mode toggled through a configurable client key binding. A qualifying entity or block impact schedules a bounded four-wave rain of ordinary arrows; hitting a creature is not required. Preserve the existing spectral-arrow scan, Lightning storm/charges/HUD, Burst explosion, bounce, trail, and configuration navigation.
 
 Rain arrows are plain, non-pickup projectiles. They inherit only the triggering projectile's base damage multiplied by `arrowRainDamageMultiplier`; they do not copy potion effects, fire, critical state, or other ammunition effects.
 
@@ -69,9 +69,11 @@ At the existing `RangedWeaponItem.shootAll` spawn boundary, arm Arrow Rain only 
 - the projectile is not an Arrow Rain child;
 - the projectile is not spectral unless `arrowRainAllowSpectralArrow=true`.
 
-Arming captures the mode and damage decision at shot time. Turning the mode off after firing does not retroactively disarm an arrow. When several armed arrows are in flight, the first valid impact atomically starts cooldown; subsequent impacts during cooldown mark themselves triggered but create no rain.
+Arming captures the mode and damage decision at shot time. Turning the mode off after firing does not retroactively disarm an arrow. An entity hit uses the hit entity's current `entity.getPos()` as the rain center. A final block hit uses `BlockHitResult.getPos()` as the rain center, making nearby ground or walls the primary suppression-zone trigger. The configured `arrowRainTriggerOnEntityHit` and `arrowRainTriggerOnBlockHit` flags independently gate those impact types.
 
-Entity and final block impacts call one shared server controller. On the first qualifying impact, set `arrow_rain_triggered=true` before checking/creating effects. Misses have no impact callback. This prevents piercing, reflection, duplicated callbacks, and long-lived arrows from triggering twice.
+Entity and final block impacts call one shared server controller. On the first enabled qualifying impact while the owner is ready, atomically start the owner's cooldown, set `arrow_rain_triggered=true`, and schedule the rain. The projectile remains untriggered when an impact type is disabled, so a later enabled impact can still qualify. Once a rain is scheduled, piercing, reflection, duplicated callbacks, and long-lived arrows cannot trigger that projectile again. Other armed arrows that land during cooldown are marked spent, create no rain, and do not restart cooldown.
+
+Misses do not trigger Arrow Rain, do not start cooldown, and consume no Arrow Rain resource. `arrowRainTriggerOnMiss` remains an explicit default-false compatibility setting, but this design does not add a miss-detection callback; setting it to true is reserved for a future implementation rather than silently treating projectile expiry or chunk unload as a miss.
 
 Spectral arrows remain excluded by default. Their scan activation, red trail, bounce, and obstruction behavior are unchanged. When the configuration explicitly allows them, a successful scanning bounce still cancels the final block-impact callback and therefore does not create rain at the bounce point.
 
@@ -83,7 +85,7 @@ Distribute the configured total count exactly across configured waves. The first
 
 Each rain arrow:
 
-- spawns at a random horizontal position inside a circle of radius 6 centered 14 blocks above the impact;
+- spawns at a random horizontal position inside a circle of radius 8 centered 14 blocks above the impact;
 - points downward with small horizontal variance;
 - is a normal `ArrowEntity` using ordinary arrow ammunition;
 - has owner attribution when the player can be resolved;
@@ -107,13 +109,16 @@ For an illegal three-enchantment bow, existing Lightning priority applies, Burst
 Append these server-authoritative gameplay settings to `ServerScanConfig.Values`, persistence, defaults, sanitization, migration, and Cloth Config:
 
 - `enableArrowRainEnchantment = true`
-- `arrowRainRadius = 6.0`
+- `arrowRainRadius = 8.0`
 - `arrowRainArrowCount = 24`
 - `arrowRainHeight = 14.0`
 - `arrowRainDurationTicks = 40`
 - `arrowRainWaves = 4`
 - `arrowRainCooldownTicks = 200`
 - `arrowRainDamageMultiplier = 0.7`
+- `arrowRainTriggerOnBlockHit = true`
+- `arrowRainTriggerOnEntityHit = true`
+- `arrowRainTriggerOnMiss = false`
 - `arrowRainAllowSpectralArrow = false`
 
 Sanitize finite numeric values to practical non-negative bounds, ensure waves do not exceed arrow count when the count is positive, and cap count, waves, radius, height, duration, and cooldown to prevent accidental server overload.
@@ -145,11 +150,11 @@ Automated tests cover:
 - Arrow Rain resource schema, bow-only support, level, source tags, translations, and creative book;
 - Burst/Arrow Rain incompatibility in both directions and Lightning/Arrow Rain compatibility;
 - toggle validation, Burst rejection, death persistence, cooldown ticking, sync boundaries, and packet registration;
-- default spectral exclusion, config-enabled spectral support, child rejection, one-shot impact rules, and illegal-combination warning;
+- default-enabled block/entity impact policies, default-disabled miss policy, block-hit and entity-hit center selection, successful-trigger-only cooldown, default spectral exclusion, config-enabled spectral support, child rejection, one-shot impact rules, and illegal-combination warning;
 - exact wave/count distribution, duration schedule, circular spawn sampling bounds, damage scaling, no recursive arming, non-pickup state, and cleanup marker;
 - independent Lightning and Arrow Rain arming/triggered flags;
 - HUD hidden/closed/open/cooldown text and Lightning offset;
 - configuration defaults, sanitization, migration, and localized Cloth Config entries;
 - regression coverage for scan, bounce, trail, Lightning, and Burst.
 
-Fresh verification runs `gradlew.bat test`, `gradlew.bat clean build`, a dedicated-server startup-to-ready and clean-stop smoke test, and a client resource/HUD/key-binding startup smoke test. Actual enchanting rolls, anvil operations, key rebinding, arrow impacts, visual wave placement, and combined Lightning plus Arrow Rain behavior remain explicit in-game manual checks unless directly exercised.
+Fresh verification runs `gradlew.bat test`, `gradlew.bat clean build`, a dedicated-server startup-to-ready and clean-stop smoke test, and a client resource/HUD/key-binding startup smoke test. Manual in-game checks explicitly cover ground-hit suppression without a creature target, an entity-centered rain, a deliberate miss with no cooldown, an eight-block coverage area, spectral-arrow scan regression, and combined Lightning plus Arrow Rain behavior.
